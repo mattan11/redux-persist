@@ -1,10 +1,21 @@
 import {useDispatch, useSelector} from 'react-redux'
 import {add, reset, sub} from './features/countSlice'
 import {login, logout} from './features/authSlice'
+import {useEffect} from 'react'
 
 const App = () => {
     const dispatch = useDispatch();
     const {auth, count} = useSelector(state => state)
+
+    useEffect(() => {
+        fetch('http://localhost:8090/state',)
+            .then(res => res.json())
+            .then(data => {
+                dispatch({
+                    type: 'hydrate', payload: data
+                })
+            });
+    }, []);
 
     return (
         <div className="App">

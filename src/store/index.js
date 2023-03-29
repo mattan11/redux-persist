@@ -2,52 +2,34 @@ import {combineReducers, configureStore} from '@reduxjs/toolkit';
 import authReducer from '../features/authSlice';
 import countReducer from '../features/countSlice';
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
     auth: authReducer,
     count: countReducer,
 });
 
-let store = null;
+const rootReducer = (state, action) => {
+    if (action.type === 'hydrate') {
+        return appReducer(action.payload, action.payload);
+    }
 
-export const configureStoreAsync = () => {
-    return new Promise(resolve => {
-        fetch('http://localhost:8090/state')
-            .then(res => res.json())
-            .then(preloadedState => {
-                const options = {
-                    reducer: rootReducer,
-                    preloadedState,
-                }
-
-                if (preloadedState) {
-                    options.preloadedState = preloadedState;
-                }
-
-                store = configureStore(options);
-
-                resolve(store);
-            });
-    });
+    return appReducer(state, action);
 }
 
-export const saveStateAsync = () => {
-    return new Promise((resolve, reject) => {
-        fetch('http://localhost:8090/state', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(store.getState()),
-        })
-            .then(r => r.json())
-            .then((res) => {
-                resolve(res);
-            })
-            .catch(err => {
-                reject(err);
-                console.log(err, 'err');
-            });
-    });
-}
+let store = configureStore({
+    reducer: rootReducer,
+});
+
+store.subscribe(() => {
+    const state = store.getState();
+    fetch('http://localhost:8090/state', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(state),
+    })
+        .then(r => r.json())
+        .then((data) => console.log(data));
+});
 
 export default store;

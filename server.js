@@ -7,13 +7,7 @@ const PORT = 8090;
 app.use(cors());
 app.use(express.json());
 
-let savedState = {
-    auth: {
-        loggedIn: false,
-    }, count: {
-        value: 0,
-    }
-};
+let savedState = null;
 
 app.get('/state', (req, res) => {
     res.json(savedState);
